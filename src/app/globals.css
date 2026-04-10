@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FFFDF7;
+  --foreground: #1a1a1a;
+  --saffron: #FF9933;
+  --saffron-light: #FFF3E0;
+  --saffron-dark: #E67E22;
+  --gold: #FFD700;
+  --gold-light: #FFF8DC;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-saffron: #FF9933;
+  --color-saffron-light: #FFF3E0;
+  --color-saffron-dark: #E67E22;
+  --color-gold: #FFD700;
+  --color-gold-light: #FFF8DC;
+  --color-spiritual-bg: #FFFDF7;
+  --font-sans: 'Noto Sans Devanagari', sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Noto Sans Devanagari', sans-serif;
+}
+
+/* Guru Image Glow Animation */
+@keyframes divine-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 0 30px rgba(255, 153, 51, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 153, 51, 0.4);
+  }
+}
+
+.guru-glow {
+  animation: divine-glow 3s ease-in-out infinite;
+}
+
+/* Shimmer Animation for Surprise Card */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-effect {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 215, 0, 0.3) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Card Flip Animation */
+@keyframes flipIn {
+  0% {
+    transform: rotateX(90deg);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+.flip-in {
+  animation: flipIn 0.6s ease-out forwards;
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Toast Animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+/* Saffron Spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.saffron-spinner {
+  border: 3px solid #FFF3E0;
+  border-top-color: #FF9933;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Button Press Effect */
+.btn-press:active {
+  transform: scale(0.95);
+  transition: transform 0.1s;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #FFF3E0;
+}
+::-webkit-scrollbar-thumb {
+  background: #FF9933;
+  border-radius: 2px;
+}
