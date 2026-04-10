@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { getSettings, type AttendanceResult } from "@/lib/api";
+import { getSettings, getUserProfile, type AttendanceResult } from "@/lib/api";
 import { FOOTER_TEXT, FOOTER_DEDICATION } from "@/lib/constants";
 import GuruImage from "@/components/GuruImage";
 import SurpriseCard from "@/components/SurpriseCard";
@@ -34,6 +34,25 @@ export default function DashboardPage() {
       setTotal(user.totalAttendance);
     }
   }, [user]);
+
+  // Refresh stats from server on mount to fix stale localStorage values
+  useEffect(() => {
+    if (!user) return;
+    getUserProfile(user.id).then((res) => {
+      if (res.success && res.data) {
+        const fresh = res.data;
+        setStreak(fresh.currentStreak);
+        setTotal(fresh.totalAttendance);
+        login({
+          ...user,
+          currentStreak: fresh.currentStreak,
+          totalAttendance: fresh.totalAttendance,
+          lastAttendanceDate: fresh.lastAttendanceDate,
+        });
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   useEffect(() => {
     getSettings().then((res) => {

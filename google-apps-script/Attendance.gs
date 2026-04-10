@@ -10,6 +10,14 @@
 function mark(data) {
   var lock = LockService.getScriptLock();
   try {
+    // 6:15 AM IST cutoff check (before acquiring lock)
+    var now = new Date();
+    var hour = parseInt(Utilities.formatDate(now, 'Asia/Kolkata', 'HH'));
+    var minute = parseInt(Utilities.formatDate(now, 'Asia/Kolkata', 'mm'));
+    if (hour > 6 || (hour === 6 && minute > 15)) {
+      return { success: false, error: 'उपस्थिति का समय समाप्त हो गया है। कृपया कल सुबह 6 बजे जुड़ें।' };
+    }
+
     lock.waitLock(15000);
 
     var userId = (data.userId || '').trim();

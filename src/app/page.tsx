@@ -90,6 +90,11 @@ export default function LoginPage() {
           </button>
         </form>
 
+        {/* Attendance time note */}
+        <p className="text-center text-xs text-gray-400">
+          🕕 नोट: उपस्थिति सुबह 6:15 बजे से पहले ही दर्ज होगी।
+        </p>
+
         {/* Signup Link */}
         <p className="text-center text-sm text-gray-500">
           नया खाता बनाना है?{" "}

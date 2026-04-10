@@ -19,6 +19,7 @@ export interface User {
   currentStreak: number;
   lastAttendanceDate: string;
   joinDate: string;
+  branch: string;
 }
 
 export interface AuthContextType {

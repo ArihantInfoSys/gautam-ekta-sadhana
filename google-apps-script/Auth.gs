@@ -1,12 +1,8 @@
 /**
  * Auth.gs - Simple phone-based authentication (no OTP)
+ * MEMBERS columns: ID, Name, Phone, JoinDate, TotalAttendance, CurrentStreak, LastAttendanceDate, Role, Branch
  */
 
-/**
- * Sign up a new user.
- * @param {Object} data - {name: string, phone: string}
- * @returns {Object} User object or error
- */
 function signup(data) {
   var lock = LockService.getScriptLock();
   try {
@@ -15,7 +11,8 @@ function signup(data) {
     var name = (data.name || '').trim();
     var phone = (data.phone || '').trim();
     var role = (data.role || 'member').trim();
-    // Only allow member or leader from self-registration
+    var branch = (data.branch || '').trim();
+
     if (role !== 'member' && role !== 'leader') {
       role = 'member';
     }
@@ -23,8 +20,10 @@ function signup(data) {
     if (!name || !phone) {
       return { success: false, error: 'Name and phone are required.' };
     }
+    if (!branch) {
+      return { success: false, error: 'Branch is required.' };
+    }
 
-    // Check if phone already exists
     var existingRow = findRowByPhone(phone);
     if (existingRow !== -1) {
       return { success: false, error: 'Phone number already registered.' };
@@ -32,10 +31,10 @@ function signup(data) {
 
     var sheet = getSheet('MEMBERS');
     var id = generateId();
-    var joinDate = todayIST();
+    var joinDate = timestampIST();
 
-    // Columns: ID, Name, Phone, JoinDate, TotalAttendance, CurrentStreak, LastAttendanceDate, Role
-    var newRow = [id, name, phone, joinDate, 0, 0, '', role];
+    // Columns: ID, Name, Phone, JoinDate, TotalAttendance, CurrentStreak, LastAttendanceDate, Role, Branch
+    var newRow = [id, name, phone, joinDate, 0, 0, '', role, branch];
     sheet.appendRow(newRow);
 
     return {
@@ -48,7 +47,8 @@ function signup(data) {
         totalAttendance: 0,
         currentStreak: 0,
         lastAttendanceDate: '',
-        role: role
+        role: role,
+        branch: branch
       }
     };
   } catch (err) {
@@ -58,11 +58,6 @@ function signup(data) {
   }
 }
 
-/**
- * Log in an existing user by phone number.
- * @param {Object} data - {phone: string}
- * @returns {Object} User object or error
- */
 function login(data) {
   var phone = (data.phone || '').trim();
 
@@ -76,7 +71,7 @@ function login(data) {
   }
 
   var sheet = getSheet('MEMBERS');
-  var values = sheet.getRange(row, 1, 1, 8).getValues()[0];
+  var values = sheet.getRange(row, 1, 1, 9).getValues()[0];
 
   return {
     success: true,
@@ -88,16 +83,12 @@ function login(data) {
       totalAttendance: Number(values[4]),
       currentStreak: Number(values[5]),
       lastAttendanceDate: String(values[6]),
-      role: String(values[7])
+      role: String(values[7]),
+      branch: String(values[8])
     }
   };
 }
 
-/**
- * Get a user's profile by their ID.
- * @param {string} userId - User ID
- * @returns {Object} User data or error
- */
 function getProfile(userId) {
   if (!userId) {
     return { success: false, error: 'User ID is required.' };
@@ -109,7 +100,7 @@ function getProfile(userId) {
   }
 
   var sheet = getSheet('MEMBERS');
-  var values = sheet.getRange(row, 1, 1, 8).getValues()[0];
+  var values = sheet.getRange(row, 1, 1, 9).getValues()[0];
 
   return {
     success: true,
@@ -121,7 +112,8 @@ function getProfile(userId) {
       totalAttendance: Number(values[4]),
       currentStreak: Number(values[5]),
       lastAttendanceDate: String(values[6]),
-      role: String(values[7])
+      role: String(values[7]),
+      branch: String(values[8])
     }
   };
 }

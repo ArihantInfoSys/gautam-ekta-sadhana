@@ -82,6 +82,14 @@ function todayIST() {
 }
 
 /**
+ * Get current date+time as yyyy-MM-dd HH:mm:ss in Asia/Kolkata timezone.
+ * @returns {string}
+ */
+function timestampIST() {
+  return Utilities.formatDate(new Date(), 'Asia/Kolkata', 'yyyy-MM-dd HH:mm:ss');
+}
+
+/**
  * Get yesterday's date in yyyy-MM-dd format in Asia/Kolkata timezone.
  * @returns {string}
  */

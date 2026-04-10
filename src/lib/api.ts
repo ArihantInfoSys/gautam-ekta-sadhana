@@ -80,14 +80,16 @@ export interface SignupData {
   currentStreak: number;
   lastAttendanceDate: string;
   joinDate: string;
+  branch: string;
 }
 
 export async function signup(
   name: string,
   phone: string,
-  role: string = "member"
+  role: string = "member",
+  branch: string = ""
 ): Promise<ApiResponse<SignupData>> {
-  return postToGAS<SignupData>("signup", { name, phone, role });
+  return postToGAS<SignupData>("signup", { name, phone, role, branch });
 }
 
 export async function login(
@@ -119,12 +121,15 @@ export interface LeaderboardEntry {
   totalAttendance: number;
   currentStreak: number;
   rank: number;
+  branch: string;
 }
 
-export async function getLeaderboard(): Promise<
-  ApiResponse<LeaderboardEntry[]>
-> {
+export async function getLeaderboard(): Promise<ApiResponse<LeaderboardEntry[]>> {
   return getFromGAS<LeaderboardEntry[]>("getLeaderboard");
+}
+
+export async function getLeaderboardByBranch(branch: string): Promise<ApiResponse<LeaderboardEntry[]>> {
+  return getFromGAS<LeaderboardEntry[]>("getLeaderboardByBranch", { branch });
 }
 
 // ─── Profile ─────────────────────────────────────────────────────────────────
@@ -138,6 +143,7 @@ export interface UserProfile {
   currentStreak: number;
   lastAttendanceDate: string;
   joinDate: string;
+  branch: string;
 }
 
 export async function getUserProfile(

@@ -67,6 +67,9 @@ function doGet(e) {
       case 'getTodayAttendees':
         return jsonResponse(getTodayAttendees());
 
+      case 'getLeaderboardByBranch':
+        return jsonResponse(getByBranch(e.parameter.branch));
+
       default:
         return jsonResponse({ success: false, error: 'Unknown action: ' + action });
     }

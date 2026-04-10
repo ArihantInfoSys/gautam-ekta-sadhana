@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { signup as apiSignup } from "@/lib/api";
-import { APP_NAME, FOOTER_TEXT, FOOTER_DEDICATION } from "@/lib/constants";
+import { APP_NAME, FOOTER_TEXT, FOOTER_DEDICATION, MAHARASHTRA_DISTRICTS } from "@/lib/constants";
 
 export default function SignupPage() {
   const { user, login, isLoading } = useAuth();
@@ -13,6 +13,7 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("member");
+  const [branch, setBranch] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -34,9 +35,13 @@ export default function SignupPage() {
       setError("कृपया 10 अंकों का फ़ोन नंबर दर्ज करें।");
       return;
     }
+    if (!branch) {
+      setError("कृपया अपनी शाखा (जिला) चुनें।");
+      return;
+    }
 
     setLoading(true);
-    const res = await apiSignup(name.trim(), phone, role);
+    const res = await apiSignup(name.trim(), phone, role, branch);
     setLoading(false);
 
     if (res.success && res.data) {
@@ -101,6 +106,20 @@ export default function SignupPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">शाखा / जिला</label>
+            <select
+              value={branch}
+              onChange={(e) => setBranch(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-saffron/50 focus:border-saffron bg-white"
+            >
+              <option value="">-- जिला चुनें --</option>
+              {MAHARASHTRA_DISTRICTS.map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
           </div>
 
           <div>
