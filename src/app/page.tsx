@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { login as apiLogin } from "@/lib/api";
-import { APP_NAME, FOUNDATION_NAME, FOOTER_TEXT } from "@/lib/constants";
+import { APP_NAME, FOUNDATION_NAME, FOOTER_TEXT, FOOTER_DEDICATION } from "@/lib/constants";
 
 export default function LoginPage() {
   const { user, login, isLoading } = useAuth();
@@ -99,9 +99,10 @@ export default function LoginPage() {
         </p>
 
         {/* Footer */}
-        <p className="text-center text-xs text-gray-400 italic">
-          {FOOTER_TEXT}
-        </p>
+        <div className="text-center space-y-1">
+          <p className="text-xs text-gray-400 italic">{FOOTER_TEXT}</p>
+          <p className="text-xs text-gray-400">🙏 {FOOTER_DEDICATION}</p>
+        </div>
       </div>
     </div>
   );

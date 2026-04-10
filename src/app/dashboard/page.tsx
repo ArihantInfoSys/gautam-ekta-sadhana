@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { getSettings, type AttendanceResult } from "@/lib/api";
-import { FOOTER_TEXT } from "@/lib/constants";
+import { FOOTER_TEXT, FOOTER_DEDICATION } from "@/lib/constants";
 import GuruImage from "@/components/GuruImage";
 import SurpriseCard from "@/components/SurpriseCard";
 import DailyBhaav from "@/components/DailyBhaav";
@@ -126,9 +126,10 @@ export default function DashboardPage() {
       )}
 
       {/* Footer */}
-      <p className="text-center text-xs text-gray-400 italic pt-4">
-        {FOOTER_TEXT}
-      </p>
+      <div className="text-center space-y-1 pt-4">
+        <p className="text-xs text-gray-400 italic">{FOOTER_TEXT}</p>
+        <p className="text-xs text-gray-400">🙏 {FOOTER_DEDICATION}</p>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ export const APP_NAME = "गौतम एकता साधना";
 export const FOUNDATION_NAME = "Gautam Labdhi Foundation";
 export const GURU_QUOTE = "गुरु प्रेरणा से एकता की साधना";
 export const FOOTER_TEXT = "यह सिर्फ प्रार्थना नहीं… एकता का अनुभव है।";
+export const FOOTER_DEDICATION = "गुरुदेव को समर्पित — नगर रोड, गौतम लाभ्धि फाउंडेशन";
 
 export const GAS_URL = process.env.NEXT_PUBLIC_GAS_URL || "";
 
