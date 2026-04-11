@@ -28,11 +28,17 @@ export default function BranchAttendanceReportView({ defaultBranch = "all" }: Pr
   const [period, setPeriod] = useState<Period>("weekly");
   const [data, setData] = useState<BranchAttendanceReport | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     setLoading(true);
+    setError("");
     getBranchAttendanceReport(branch, period).then((res) => {
-      if (res.success && res.data) setData(res.data);
+      if (res.success && res.data) {
+        setData(res.data);
+      } else {
+        setError(res.error || "डेटा लोड नहीं हो सका।");
+      }
       setLoading(false);
     });
   }, [branch, period]);
@@ -73,6 +79,15 @@ export default function BranchAttendanceReportView({ defaultBranch = "all" }: Pr
 
       {loading ? (
         <div className="flex justify-center py-8"><LoadingSpinner /></div>
+      ) : error ? (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-center space-y-2">
+          <p className="text-2xl">⚠️</p>
+          <p className="text-sm font-semibold text-amber-800">रिपोर्ट लोड नहीं हो सकी</p>
+          <p className="text-xs text-amber-600">
+            Apps Script को नए वर्शन में फिर से डिप्लॉय करें।<br />
+            (Deploy → Manage Deployments → Edit → New version)
+          </p>
+        </div>
       ) : !data ? null : (
         <>
           {/* Summary Card */}
