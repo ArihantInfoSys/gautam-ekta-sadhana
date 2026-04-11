@@ -12,6 +12,7 @@ import AiMessage from "@/components/AiMessage";
 import PrayerButton from "@/components/PrayerButton";
 import StatsCard from "@/components/StatsCard";
 import TodayReport from "@/components/TodayReport";
+import BranchAttendanceReportView from "@/components/BranchAttendanceReport";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function DashboardPage() {
@@ -20,7 +21,7 @@ export default function DashboardPage() {
   const [zoomLink, setZoomLink] = useState("https://zoom.us/j/PLACEHOLDER");
   const [streak, setStreak] = useState(0);
   const [total, setTotal] = useState(0);
-  const [activeTab, setActiveTab] = useState<"home" | "report">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "report" | "branch">("home");
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -98,50 +99,44 @@ export default function DashboardPage() {
 
       {/* Tab Switcher */}
       <div className="flex rounded-xl bg-gray-100 p-1 gap-1">
-        <button
-          onClick={() => setActiveTab("home")}
-          className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-            activeTab === "home"
-              ? "bg-white shadow text-saffron"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          🏠 होम
-        </button>
-        <button
-          onClick={() => setActiveTab("report")}
-          className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-            activeTab === "report"
-              ? "bg-white shadow text-saffron"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          📋 आज की उपस्थिति
-        </button>
+        {(
+          [
+            { key: "home", label: "🏠 होम" },
+            { key: "report", label: "📋 आज" },
+            { key: "branch", label: "📊 रिपोर्ट" },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+              activeTab === tab.key
+                ? "bg-white shadow text-saffron"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {activeTab === "home" ? (
+      {activeTab === "home" && (
         <>
-          {/* Surprise Card - Today's Teachings */}
           <SurpriseCard />
-
-          {/* Daily Bhaav */}
           <DailyBhaav />
-
-          {/* AI Message */}
           <AiMessage />
-
-          {/* Prayer Button */}
           <PrayerButton
             zoomLink={zoomLink}
             onAttendanceMarked={handleAttendanceMarked}
           />
-
-          {/* Stats */}
           <StatsCard streak={streak} total={total} />
         </>
-      ) : (
-        <TodayReport />
+      )}
+
+      {activeTab === "report" && <TodayReport />}
+
+      {activeTab === "branch" && (
+        <BranchAttendanceReportView defaultBranch={user.branch || "all"} />
       )}
 
       {/* Footer */}

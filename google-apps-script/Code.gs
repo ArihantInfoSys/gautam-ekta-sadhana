@@ -70,6 +70,9 @@ function doGet(e) {
       case 'getLeaderboardByBranch':
         return jsonResponse(getByBranch(e.parameter.branch));
 
+      case 'getBranchAttendanceReport':
+        return jsonResponse(getBranchAttendanceReport(e.parameter.branch, e.parameter.period));
+
       default:
         return jsonResponse({ success: false, error: 'Unknown action: ' + action });
     }

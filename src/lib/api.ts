@@ -211,6 +211,26 @@ export async function getTodayCount(): Promise<ApiResponse<TodayCount>> {
   return getFromGAS<TodayCount>("getTodayCount");
 }
 
+// ─── Branch Attendance Report ─────────────────────────────────────────────────
+
+export interface BranchAttendanceReport {
+  period: string;
+  branch: string;
+  dailyData: { date: string; count: number }[];
+  uniqueAttendees: { userId: string; name: string }[];
+  totalUniqueCount: number;
+}
+
+export async function getBranchAttendanceReport(
+  branch: string,
+  period: "weekly" | "monthly"
+): Promise<ApiResponse<BranchAttendanceReport>> {
+  return getFromGAS<BranchAttendanceReport>("getBranchAttendanceReport", {
+    branch,
+    period,
+  });
+}
+
 // ─── Today Attendees ──────────────────────────────────────────────────────────
 
 export interface TodayAttendeesResult {
