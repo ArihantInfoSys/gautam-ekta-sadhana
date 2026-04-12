@@ -35,7 +35,13 @@ export default function BranchAttendanceReportView({ defaultBranch = "all" }: Pr
     setError("");
     getBranchAttendanceReport(branch, period).then((res) => {
       if (res.success && res.data) {
-        setData(res.data);
+        // Guard against an old Apps Script deployment that returns
+        // `uniqueAttendees` instead of the new `userAttendance` shape.
+        if (!Array.isArray(res.data.userAttendance)) {
+          setError("पुराना Apps Script वर्शन। कृपया फिर से डिप्लॉय करें।");
+        } else {
+          setData(res.data);
+        }
       } else {
         setError(res.error || "डेटा लोड नहीं हो सका।");
       }
@@ -44,6 +50,21 @@ export default function BranchAttendanceReportView({ defaultBranch = "all" }: Pr
   }, [branch, period]);
 
   const maxCount = data ? Math.max(...data.dailyData.map((d) => d.count), 1) : 1;
+
+  function shareToWhatsApp() {
+    if (!data) return;
+    const branchLabel = branch === "all" ? "सभी शाखाएं" : branch;
+    const periodLabel = period === "weekly" ? "साप्ताहिक" : "मासिक";
+    const title = `📊 ${branchLabel} — ${periodLabel} उपस्थिति रिपोर्ट`;
+    const topLines = data.userAttendance
+      .filter((u) => u.attendedCount > 0)
+      .slice(0, 10)
+      .map((u, i) => `${i + 1}. ${u.name} — ${u.attendedCount}/${u.totalDays}`)
+      .join("\n");
+    const body = topLines || "अभी कोई उपस्थिति नहीं।";
+    const text = `${title}\n\nसक्रिय साधक: ${data.totalUniqueCount}\nऔसत उपस्थिति: ${data.averagePercentage}%\n\n${body}\n\n🙏 गौतम एकता साधना\nhttps://gautam-ekta-sadhana.vercel.app`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+  }
 
   return (
     <div className="space-y-4">
@@ -96,13 +117,14 @@ export default function BranchAttendanceReportView({ defaultBranch = "all" }: Pr
               <div>
                 <p className="text-3xl font-bold">{data.totalUniqueCount}</p>
                 <p className="text-sm opacity-90 mt-0.5">
-                  {period === "weekly" ? "७ दिनों में" : "३० दिनों में"} अनन्य साधक
+                  {period === "weekly" ? "७ दिनों में" : "३० दिनों में"} सक्रिय साधक
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm opacity-80">कुल उपस्थिति</p>
-                <p className="text-2xl font-bold">
-                  {data.dailyData.reduce((s, d) => s + d.count, 0)}
+                <p className="text-sm opacity-80">औसत उपस्थिति</p>
+                <p className="text-2xl font-bold">{data.averagePercentage}%</p>
+                <p className="text-[11px] opacity-80 mt-0.5">
+                  कुल {data.totalAttendance} उपस्थितियाँ
                 </p>
               </div>
             </div>
@@ -135,32 +157,83 @@ export default function BranchAttendanceReportView({ defaultBranch = "all" }: Pr
             </div>
           </div>
 
-          {/* Unique Attendees List */}
-          {data.uniqueAttendees.length === 0 ? (
+          {/* Per-user Attendance Matrix */}
+          {data.userAttendance.length === 0 ? (
             <div className="text-center py-6 text-gray-400">
               <p className="text-3xl mb-2">📭</p>
-              <p className="text-sm">इस अवधि में कोई उपस्थिति नहीं मिली।</p>
+              <p className="text-sm">इस शाखा में कोई सदस्य नहीं मिले।</p>
             </div>
           ) : (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
                 <p className="text-sm font-semibold text-gray-600">
-                  {period === "weekly" ? "इस सप्ताह के" : "इस माह के"} साधक
+                  {period === "weekly" ? "साप्ताहिक" : "मासिक"} साधक रिपोर्ट
                 </p>
-                <span className="text-xs bg-saffron/15 text-saffron px-2 py-0.5 rounded-full font-semibold">
-                  {data.totalUniqueCount}
-                </span>
+                <button
+                  onClick={shareToWhatsApp}
+                  className="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full font-semibold transition-colors"
+                >
+                  📤 साझा करें
+                </button>
               </div>
-              <ul className="divide-y divide-gray-50 max-h-64 overflow-y-auto">
-                {data.uniqueAttendees.map((a, i) => (
-                  <li key={a.userId} className="flex items-center gap-3 px-4 py-2.5">
-                    <span className="w-6 h-6 rounded-full bg-saffron/15 text-saffron text-[10px] font-bold flex items-center justify-center flex-shrink-0">
-                      {i + 1}
-                    </span>
-                    <span className="text-sm text-gray-800 flex-1">{a.name}</span>
-                    <span className="text-saffron text-sm">🙏</span>
-                  </li>
-                ))}
+              <ul className="divide-y divide-gray-50 max-h-[28rem] overflow-y-auto">
+                {data.userAttendance.map((u, i) => {
+                  const pct = Math.round((u.attendedCount / u.totalDays) * 100);
+                  const colorClass =
+                    pct >= 80
+                      ? "text-green-600"
+                      : pct >= 50
+                      ? "text-amber-600"
+                      : pct > 0
+                      ? "text-red-500"
+                      : "text-gray-400";
+                  const badge =
+                    u.currentStreak >= 30
+                      ? "👑"
+                      : u.currentStreak >= 7
+                      ? "⭐"
+                      : u.currentStreak >= 3
+                      ? "🔥"
+                      : null;
+                  return (
+                    <li key={u.userId} className="px-4 py-3 flex items-center gap-3">
+                      <span className="w-6 h-6 rounded-full bg-saffron/15 text-saffron text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                        {i + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm text-gray-800 truncate">{u.name}</p>
+                          {badge && (
+                            <span className="text-xs" title={`${u.currentStreak} दिन की श्रृंखला`}>
+                              {badge}
+                            </span>
+                          )}
+                        </div>
+                        {/* Day dots: one bar per day in window */}
+                        <div className="flex gap-0.5 mt-1.5">
+                          {data.dailyData.map((d) => {
+                            const attended = u.attendedDates.includes(d.date);
+                            return (
+                              <span
+                                key={d.date}
+                                className={`h-1.5 rounded-sm flex-1 ${
+                                  attended ? "bg-saffron" : "bg-gray-200"
+                                }`}
+                                title={d.date}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0 w-12">
+                        <p className={`text-sm font-bold ${colorClass}`}>
+                          {u.attendedCount}/{u.totalDays}
+                        </p>
+                        <p className="text-[10px] text-gray-400">{pct}%</p>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}

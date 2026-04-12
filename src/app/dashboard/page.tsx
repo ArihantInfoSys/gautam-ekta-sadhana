@@ -18,7 +18,9 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 export default function DashboardPage() {
   const { user, login, logout, isLoading } = useAuth();
   const router = useRouter();
-  const [zoomLink, setZoomLink] = useState("https://zoom.us/j/PLACEHOLDER");
+  const [zoomLink, setZoomLink] = useState(
+    process.env.NEXT_PUBLIC_ZOOM_LINK || "https://zoom.us/j/PLACEHOLDER"
+  );
   const [streak, setStreak] = useState(0);
   const [total, setTotal] = useState(0);
   const [activeTab, setActiveTab] = useState<"home" | "report" | "branch">("home");

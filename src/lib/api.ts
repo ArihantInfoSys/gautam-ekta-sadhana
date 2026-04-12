@@ -216,9 +216,19 @@ export async function getTodayCount(): Promise<ApiResponse<TodayCount>> {
 export interface BranchAttendanceReport {
   period: string;
   branch: string;
+  totalDays: number;
   dailyData: { date: string; count: number }[];
-  uniqueAttendees: { userId: string; name: string }[];
+  userAttendance: {
+    userId: string;
+    name: string;
+    attendedCount: number;
+    totalDays: number;
+    attendedDates: string[];
+    currentStreak: number;
+  }[];
   totalUniqueCount: number;
+  totalAttendance: number;
+  averagePercentage: number;
 }
 
 export async function getBranchAttendanceReport(

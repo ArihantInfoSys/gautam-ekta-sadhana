@@ -3,6 +3,20 @@
  */
 
 /**
+ * Normalize a date cell value to 'yyyy-MM-dd' string.
+ * Google Sheets auto-converts string cells that look like dates into Date
+ * objects when read via getValues(), so String(cell) can produce something
+ * like "Sat Apr 11 2026 00:00:00 GMT+0530". Always funnel date cells through
+ * this helper before comparing.
+ */
+function normalizeAttendanceDate(val) {
+  if (val instanceof Date) {
+    return Utilities.formatDate(val, 'Asia/Kolkata', 'yyyy-MM-dd');
+  }
+  return String(val).trim();
+}
+
+/**
  * Mark attendance for a user.
  * @param {Object} data - {userId: string}
  * @returns {Object} {success, streak, total} or error
@@ -38,7 +52,7 @@ function mark(data) {
     var attendanceData = attendanceSheet.getDataRange().getValues();
     for (var i = 1; i < attendanceData.length; i++) {
       if (String(attendanceData[i][0]).trim() === userId &&
-          String(attendanceData[i][1]).trim() === today) {
+          normalizeAttendanceDate(attendanceData[i][1]) === today) {
         return { success: false, error: 'Attendance already marked for today.' };
       }
     }
@@ -95,7 +109,7 @@ function getTodayCount() {
   var count = 0;
 
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][1]).trim() === today) {
+    if (normalizeAttendanceDate(data[i][1]) === today) {
       count++;
     }
   }
@@ -115,7 +129,7 @@ function getTodayAttendees() {
   // Collect userIds for today
   var todayIds = [];
   for (var i = 1; i < attendanceData.length; i++) {
-    if (String(attendanceData[i][1]).trim() === today) {
+    if (normalizeAttendanceDate(attendanceData[i][1]) === today) {
       todayIds.push(String(attendanceData[i][0]).trim());
     }
   }
@@ -137,26 +151,29 @@ function getTodayAttendees() {
 
 /**
  * Get weekly or monthly attendance report filtered by branch.
+ * Returns a per-user attendance matrix so the frontend can render
+ * ratios like "5/7" and day-by-day dot visualizations.
+ *
  * @param {string} branch - District name or 'all'
  * @param {string} period - 'weekly' (7 days) or 'monthly' (30 days)
  */
 function getBranchAttendanceReport(branch, period) {
   var days = period === 'monthly' ? 30 : 7;
 
-  // Build ordered date array for the period
+  // Build ordered date array for the period (oldest → newest, yyyy-MM-dd)
   var dates = [];
   for (var d = days - 1; d >= 0; d--) {
     var dt = new Date();
     dt.setDate(dt.getDate() - d);
     dates.push(Utilities.formatDate(dt, 'Asia/Kolkata', 'yyyy-MM-dd'));
   }
-  var startDate = dates[0];
 
-  // Collect member IDs in the requested branch
+  // Collect members in the requested branch, plus streak lookup
   var membersSheet = getSheet('MEMBERS');
   var membersData = membersSheet.getDataRange().getValues();
   var branchMemberIds = {};
   var memberNames = {};
+  var memberStreaks = {};
 
   for (var i = 1; i < membersData.length; i++) {
     var memberBranch = String(membersData[i][8]).trim();
@@ -164,6 +181,7 @@ function getBranchAttendanceReport(branch, period) {
       var id = String(membersData[i][0]).trim();
       branchMemberIds[id] = true;
       memberNames[id] = String(membersData[i][1]);
+      memberStreaks[id] = Number(membersData[i][5]) || 0;
     }
   }
 
@@ -172,17 +190,17 @@ function getBranchAttendanceReport(branch, period) {
   var attendanceData = attendanceSheet.getDataRange().getValues();
 
   var dayCounts = {};
-  var uniqueAttendees = {};
   dates.forEach(function(date) { dayCounts[date] = 0; });
+
+  var userDates = {}; // userId -> { "2026-04-11": true, ... }
 
   for (var j = 1; j < attendanceData.length; j++) {
     var userId = String(attendanceData[j][0]).trim();
-    var dateStr = String(attendanceData[j][1]).trim();
-    if (dateStr >= startDate && branchMemberIds[userId]) {
-      if (dayCounts.hasOwnProperty(dateStr)) {
-        dayCounts[dateStr]++;
-      }
-      uniqueAttendees[userId] = memberNames[userId] || 'साधक';
+    var dateStr = normalizeAttendanceDate(attendanceData[j][1]);
+    if (dayCounts.hasOwnProperty(dateStr) && branchMemberIds[userId]) {
+      dayCounts[dateStr]++;
+      if (!userDates[userId]) userDates[userId] = {};
+      userDates[userId][dateStr] = true;
     }
   }
 
@@ -190,18 +208,41 @@ function getBranchAttendanceReport(branch, period) {
     return { date: date, count: dayCounts[date] };
   });
 
-  var attendeeList = Object.keys(uniqueAttendees).map(function(uid) {
-    return { userId: uid, name: uniqueAttendees[uid] };
+  // Build userAttendance — every branch member (including 0-attendance),
+  // sorted by attendance desc, then streak desc as tiebreaker.
+  var userAttendance = Object.keys(branchMemberIds).map(function(uid) {
+    var attended = userDates[uid] ? Object.keys(userDates[uid]).sort() : [];
+    return {
+      userId: uid,
+      name: memberNames[uid] || 'साधक',
+      attendedCount: attended.length,
+      totalDays: days,
+      attendedDates: attended,
+      currentStreak: memberStreaks[uid] || 0
+    };
+  }).sort(function(a, b) {
+    if (b.attendedCount !== a.attendedCount) return b.attendedCount - a.attendedCount;
+    return b.currentStreak - a.currentStreak;
   });
+
+  // Compute summary metrics from active members only
+  var active = userAttendance.filter(function(u) { return u.attendedCount > 0; });
+  var totalAttendance = active.reduce(function(s, u) { return s + u.attendedCount; }, 0);
+  var avg = active.length
+    ? Math.round(active.reduce(function(s, u) { return s + (u.attendedCount / days) * 100; }, 0) / active.length)
+    : 0;
 
   return {
     success: true,
     data: {
       period: period,
       branch: branch,
+      totalDays: days,
       dailyData: dailyData,
-      uniqueAttendees: attendeeList,
-      totalUniqueCount: attendeeList.length
+      userAttendance: userAttendance,
+      totalUniqueCount: active.length,
+      totalAttendance: totalAttendance,
+      averagePercentage: avg
     }
   };
 }

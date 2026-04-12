@@ -35,8 +35,15 @@ export default function PrayerButton({
 
   const handleClick = async () => {
     if (!user || loading || attended) return;
-    setLoading(true);
 
+    // Open Zoom synchronously inside the click handler so popup blockers
+    // don't kill it. If we wait for the markAttendance fetch to resolve,
+    // the user-gesture context is lost and `window.open` gets blocked.
+    if (zoomLink) {
+      window.open(zoomLink, "_blank", "noopener,noreferrer");
+    }
+
+    setLoading(true);
     const res = await markAttendance(user.id);
     setLoading(false);
 
@@ -44,7 +51,6 @@ export default function PrayerButton({
       setAttended(true);
       showToast("🙏 उपस्थिति दर्ज हो गई!");
       onAttendanceMarked?.(res.data);
-      window.open(zoomLink, "_blank");
     } else {
       showToast(res.error || "कुछ गड़बड़ हो गई, पुनः प्रयास करें।");
     }
