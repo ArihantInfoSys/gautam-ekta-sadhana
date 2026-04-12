@@ -111,7 +111,11 @@ export default function LeaderboardPage() {
       {loading ? (
         <LoadingSpinner />
       ) : (
-        <LeaderboardTable entries={entries} currentUserId={user.id} />
+        <LeaderboardTable
+          entries={entries}
+          currentUserId={user.id}
+          groupByBranch={selectedBranch === "all"}
+        />
       )}
     </div>
   );
