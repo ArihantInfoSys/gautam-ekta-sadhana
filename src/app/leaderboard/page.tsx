@@ -34,7 +34,7 @@ export default function LeaderboardPage() {
   }, [user, isLoading, router]);
 
   useEffect(() => {
-    if (!user || user.role === "member") return;
+    if (!user) return;
     setLoading(true);
     getLeaderboard(period, selectedBranch).then((res) => {
       if (res.success && res.data) {
@@ -45,26 +45,6 @@ export default function LeaderboardPage() {
   }, [user, period, selectedBranch]);
 
   if (isLoading || !user) return <LoadingSpinner />;
-
-  // Members see locked screen
-  if (user.role === "member") {
-    return (
-      <div className="max-w-md mx-auto px-4 py-6 space-y-4">
-        <h1 className="text-2xl font-bold text-center text-saffron-dark">
-          🏆 लीडरबोर्ड
-        </h1>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center space-y-4">
-          <p className="text-6xl">🔒</p>
-          <p className="text-gray-700 font-semibold text-lg">
-            लीडरबोर्ड केवल नेताओं के लिए उपलब्ध है
-          </p>
-          <p className="text-sm text-gray-400">
-            यह सुविधा नेता (Leader) भूमिका वाले साधकों के लिए है।
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-md mx-auto px-4 py-6 space-y-4">
