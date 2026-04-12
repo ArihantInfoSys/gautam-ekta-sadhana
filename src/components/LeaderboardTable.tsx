@@ -23,40 +23,47 @@ export default function LeaderboardTable({
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-      <table className="w-full text-sm">
+      <table className="w-full text-xs">
         <thead>
           <tr className="bg-saffron-light text-saffron-dark">
-            <th className="py-3 px-3 text-left">#</th>
-            <th className="py-3 px-3 text-left">नाम</th>
-            <th className="py-3 px-2 text-center">उपस्थिति</th>
-            <th className="py-3 px-2 text-center">स्ट्रीक</th>
+            <th className="py-2 px-2 text-left">#</th>
+            <th className="py-2 px-2 text-left">साधक</th>
+            <th className="py-2 px-1 text-left">शाखा</th>
+            <th className="py-2 px-1 text-center">उप.</th>
+            <th className="py-2 px-1 text-left">नेता</th>
           </tr>
         </thead>
         <tbody>
-          {entries.map((entry) => (
-            <tr
-              key={entry.id}
-              className={`border-t border-gray-100 ${
-                entry.id === currentUserId ? "bg-saffron-light/50" : ""
-              }`}
-            >
-              <td className="py-3 px-3 font-medium">
-                {medals[entry.rank] || entry.rank}
-              </td>
-              <td className="py-3 px-3">
-                {entry.name}
-                {entry.id === currentUserId && (
-                  <span className="text-xs text-saffron ml-1">(आप)</span>
-                )}
-              </td>
-              <td className="py-3 px-2 text-center font-semibold">
-                {entry.totalAttendance}
-              </td>
-              <td className="py-3 px-2 text-center">
-                {entry.currentStreak > 0 && "🔥"} {entry.currentStreak}
-              </td>
-            </tr>
-          ))}
+          {entries.map((entry) => {
+            const isMe = entry.id === currentUserId;
+            return (
+              <tr
+                key={entry.id}
+                className={`border-t border-gray-100 ${
+                  isMe ? "bg-saffron-light/50" : ""
+                }`}
+              >
+                <td className="py-2 px-2 font-medium">
+                  {medals[entry.rank] || entry.rank}
+                </td>
+                <td className="py-2 px-2">
+                  {entry.name}
+                  {isMe && (
+                    <span className="text-[10px] text-saffron ml-1">(आप)</span>
+                  )}
+                </td>
+                <td className="py-2 px-1 text-gray-600 truncate max-w-[70px]">
+                  {entry.branch || "—"}
+                </td>
+                <td className="py-2 px-1 text-center font-bold text-saffron-dark">
+                  {entry.attendance}
+                </td>
+                <td className="py-2 px-1 text-gray-500 truncate max-w-[70px]">
+                  {entry.leaderName || "—"}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

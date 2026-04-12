@@ -105,8 +105,8 @@ export default function BranchAttendanceReportView({ defaultBranch = "all" }: Pr
           <p className="text-2xl">⚠️</p>
           <p className="text-sm font-semibold text-amber-800">रिपोर्ट लोड नहीं हो सकी</p>
           <p className="text-xs text-amber-600">
-            Apps Script को नए वर्शन में फिर से डिप्लॉय करें।<br />
-            (Deploy → Manage Deployments → Edit → New version)
+            Google Apps Script को <b>नए वर्शन</b> में फिर से डिप्लॉय करें:<br />
+            Deploy → Manage Deployments → ✏️ Edit → Version: <b>New version</b> → Deploy
           </p>
         </div>
       ) : !data ? null : (

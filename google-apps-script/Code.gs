@@ -47,7 +47,7 @@ function doGet(e) {
 
     switch (action) {
       case 'getLeaderboard':
-        return jsonResponse(get());
+        return jsonResponse(get(e.parameter.period, e.parameter.branch));
 
       case 'getUserProfile':
         return jsonResponse(getProfile(e.parameter.userId));

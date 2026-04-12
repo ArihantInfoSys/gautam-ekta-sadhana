@@ -115,21 +115,22 @@ export async function markAttendance(
 
 // ─── Leaderboard ─────────────────────────────────────────────────────────────
 
+export type LeaderboardPeriod = "daily" | "weekly" | "monthly" | "all";
+
 export interface LeaderboardEntry {
+  rank: number;
   id: string;
   name: string;
-  totalAttendance: number;
-  currentStreak: number;
-  rank: number;
   branch: string;
+  attendance: number;
+  leaderName: string;
 }
 
-export async function getLeaderboard(): Promise<ApiResponse<LeaderboardEntry[]>> {
-  return getFromGAS<LeaderboardEntry[]>("getLeaderboard");
-}
-
-export async function getLeaderboardByBranch(branch: string): Promise<ApiResponse<LeaderboardEntry[]>> {
-  return getFromGAS<LeaderboardEntry[]>("getLeaderboardByBranch", { branch });
+export async function getLeaderboard(
+  period: LeaderboardPeriod = "all",
+  branch: string = "all"
+): Promise<ApiResponse<LeaderboardEntry[]>> {
+  return getFromGAS<LeaderboardEntry[]>("getLeaderboard", { period, branch });
 }
 
 // ─── Profile ─────────────────────────────────────────────────────────────────
