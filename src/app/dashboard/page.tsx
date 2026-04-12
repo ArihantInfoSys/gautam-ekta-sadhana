@@ -18,9 +18,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 export default function DashboardPage() {
   const { user, login, logout, isLoading } = useAuth();
   const router = useRouter();
-  const [zoomLink, setZoomLink] = useState(
-    process.env.NEXT_PUBLIC_ZOOM_LINK || "https://zoom.us/j/PLACEHOLDER"
-  );
+  const [zoomLink, setZoomLink] = useState("");
   const [streak, setStreak] = useState(0);
   const [total, setTotal] = useState(0);
   const [activeTab, setActiveTab] = useState<"home" | "report" | "branch">("home");
@@ -124,8 +122,33 @@ export default function DashboardPage() {
 
       {activeTab === "home" && (
         <>
+          {/* Spiritual Mantra */}
+          <p className="text-center text-sm text-saffron-dark font-semibold italic">
+            अनंत-लब्धि-निधानाय श्री गौतम स्वामिने नमः
+          </p>
+
           <SurpriseCard />
           <DailyBhaav />
+
+          {/* Gautam Swami Ashtak */}
+          <a
+            href="https://youtu.be/xj1Uvi6ZYrA"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 bg-gradient-to-r from-saffron/10 to-gold/10 border border-saffron/20 rounded-xl px-4 py-3 hover:shadow-md transition-all"
+          >
+            <span className="text-2xl">🎵</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-saffron-dark">
+                गौतम स्वामी अष्टक
+              </p>
+              <p className="text-[11px] text-gray-500">
+                सुनें और भक्ति में डूबें
+              </p>
+            </div>
+            <span className="text-saffron text-lg">▶</span>
+          </a>
+
           <AiMessage />
           <PrayerButton
             zoomLink={zoomLink}

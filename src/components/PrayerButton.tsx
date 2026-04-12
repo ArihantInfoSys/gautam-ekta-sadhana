@@ -39,7 +39,7 @@ export default function PrayerButton({
     // Open Zoom synchronously inside the click handler so popup blockers
     // don't kill it. If we wait for the markAttendance fetch to resolve,
     // the user-gesture context is lost and `window.open` gets blocked.
-    if (zoomLink) {
+    if (zoomLink && !zoomLink.includes("PLACEHOLDER")) {
       window.open(zoomLink, "_blank", "noopener,noreferrer");
     }
 
