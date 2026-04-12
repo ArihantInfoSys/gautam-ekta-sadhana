@@ -51,19 +51,69 @@ export default function BranchAttendanceReportView({ defaultBranch = "all" }: Pr
 
   const maxCount = data ? Math.max(...data.dailyData.map((d) => d.count), 1) : 1;
 
-  function shareToWhatsApp() {
+  function downloadExcel() {
     if (!data) return;
-    const branchLabel = branch === "all" ? "सभी शाखाएं" : branch;
-    const periodLabel = period === "weekly" ? "साप्ताहिक" : "मासिक";
-    const title = `📊 ${branchLabel} — ${periodLabel} उपस्थिति रिपोर्ट`;
-    const topLines = data.userAttendance
-      .filter((u) => u.attendedCount > 0)
-      .slice(0, 10)
-      .map((u, i) => `${i + 1}. ${u.name} — ${u.attendedCount}/${u.totalDays}`)
-      .join("\n");
-    const body = topLines || "अभी कोई उपस्थिति नहीं।";
-    const text = `${title}\n\nसक्रिय साधक: ${data.totalUniqueCount}\nऔसत उपस्थिति: ${data.averagePercentage}%\n\n${body}\n\n🙏 गौतम एकता साधना\nhttps://gautam-ekta-sadhana.vercel.app`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    const branchLabel = branch === "all" ? "all-branches" : branch;
+    const periodLabel = period === "weekly" ? "weekly" : "monthly";
+
+    // CSV with BOM for Excel UTF-8 (Devanagari) support
+    const escape = (v: string | number) => {
+      const s = String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+
+    const headers = [
+      "क्रम",
+      "नाम",
+      "उपस्थित दिन",
+      "कुल दिन",
+      "प्रतिशत",
+      "वर्तमान श्रृंखला",
+      ...data.dailyData.map((d) => d.date),
+    ];
+
+    const rows = data.userAttendance.map((u, i) => {
+      const pct = Math.round((u.attendedCount / u.totalDays) * 100);
+      const dayCells = data.dailyData.map((d) =>
+        u.attendedDates.includes(d.date) ? "✓" : ""
+      );
+      return [
+        i + 1,
+        u.name,
+        u.attendedCount,
+        u.totalDays,
+        `${pct}%`,
+        u.currentStreak,
+        ...dayCells,
+      ];
+    });
+
+    const summary = [
+      [`रिपोर्ट: ${branch === "all" ? "सभी शाखाएं" : branch} — ${period === "weekly" ? "साप्ताहिक" : "मासिक"}`],
+      [`सक्रिय साधक: ${data.totalUniqueCount}`],
+      [`औसत उपस्थिति: ${data.averagePercentage}%`],
+      [`कुल उपस्थितियाँ: ${data.totalAttendance}`],
+      [],
+    ];
+
+    const csvLines = [
+      ...summary.map((r) => r.map(escape).join(",")),
+      headers.map(escape).join(","),
+      ...rows.map((r) => r.map(escape).join(",")),
+    ];
+
+    const csv = "\uFEFF" + csvLines.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gautam-ekta-${branchLabel}-${periodLabel}-${new Date()
+      .toISOString()
+      .slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -170,10 +220,10 @@ export default function BranchAttendanceReportView({ defaultBranch = "all" }: Pr
                   {period === "weekly" ? "साप्ताहिक" : "मासिक"} साधक रिपोर्ट
                 </p>
                 <button
-                  onClick={shareToWhatsApp}
-                  className="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full font-semibold transition-colors"
+                  onClick={downloadExcel}
+                  className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full font-semibold transition-colors"
                 >
-                  📤 साझा करें
+                  📥 Excel डाउनलोड
                 </button>
               </div>
               <ul className="divide-y divide-gray-50 max-h-[28rem] overflow-y-auto">

@@ -85,7 +85,7 @@ export default function DashboardPage() {
       {/* Header: Greeting + Logout */}
       <div className="flex items-center justify-between">
         <p className="text-lg font-medium text-gray-700">
-          🙏 नमस्ते, <span className="text-saffron font-semibold">{user.name}</span>
+          🙏 जय जिनेन्द्र, <span className="text-saffron font-semibold">{user.name}</span>
         </p>
         <button
           onClick={logout}
