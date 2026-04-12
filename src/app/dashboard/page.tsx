@@ -161,7 +161,7 @@ export default function DashboardPage() {
       {activeTab === "report" && <TodayReport />}
 
       {activeTab === "branch" && (
-        <BranchAttendanceReportView defaultBranch={user.branch || "all"} />
+        <BranchAttendanceReportView defaultBranch="all" />
       )}
 
       {/* Footer */}

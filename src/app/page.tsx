@@ -14,6 +14,12 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Pre-fill cached phone number
+  useEffect(() => {
+    const cached = localStorage.getItem("gautam_phone");
+    if (cached) setPhone(cached);
+  }, []);
+
   useEffect(() => {
     if (!isLoading && user) {
       router.push("/dashboard");
@@ -34,6 +40,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (res.success && res.data) {
+      localStorage.setItem("gautam_phone", phone);
       login(res.data);
       router.push("/dashboard");
     } else {
