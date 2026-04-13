@@ -82,7 +82,7 @@ function login(data) {
       joinDate: String(values[3]),
       totalAttendance: Number(values[4]),
       currentStreak: Number(values[5]),
-      lastAttendanceDate: String(values[6]),
+      lastAttendanceDate: values[6] instanceof Date ? Utilities.formatDate(values[6], 'Asia/Kolkata', 'yyyy-MM-dd') : String(values[6]),
       role: String(values[7]),
       branch: String(values[8])
     }
@@ -111,7 +111,7 @@ function getProfile(userId) {
       joinDate: String(values[3]),
       totalAttendance: Number(values[4]),
       currentStreak: Number(values[5]),
-      lastAttendanceDate: String(values[6]),
+      lastAttendanceDate: values[6] instanceof Date ? Utilities.formatDate(values[6], 'Asia/Kolkata', 'yyyy-MM-dd') : String(values[6]),
       role: String(values[7]),
       branch: String(values[8])
     }

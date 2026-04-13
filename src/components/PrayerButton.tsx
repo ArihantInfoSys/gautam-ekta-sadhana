@@ -14,7 +14,17 @@ function isToday(dateStr: string): boolean {
   const today = new Date().toLocaleDateString("en-CA", {
     timeZone: "Asia/Kolkata",
   });
-  return dateStr === today;
+  // Direct match (YYYY-MM-DD)
+  if (dateStr === today) return true;
+  // Parse long date strings like "Mon Apr 13 2026 00:00:00 GMT+0530..."
+  const parsed = new Date(dateStr);
+  if (!isNaN(parsed.getTime())) {
+    const parsedDate = parsed.toLocaleDateString("en-CA", {
+      timeZone: "Asia/Kolkata",
+    });
+    return parsedDate === today;
+  }
+  return false;
 }
 
 function isPrayerTime(): boolean {
