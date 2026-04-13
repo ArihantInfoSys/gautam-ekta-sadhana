@@ -102,6 +102,7 @@ export async function login(
 
 export interface AttendanceResult {
   marked: boolean;
+  alreadyMarked?: boolean;
   totalAttendance: number;
   currentStreak: number;
   lastAttendanceDate: string;

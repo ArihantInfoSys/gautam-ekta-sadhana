@@ -24,12 +24,14 @@ function normalizeAttendanceDate(val) {
 function mark(data) {
   var lock = LockService.getScriptLock();
   try {
-    // 6:15 AM IST cutoff check (before acquiring lock)
+    // 5:50 AM – 6:15 AM IST window check (before acquiring lock)
     var now = new Date();
     var hour = parseInt(Utilities.formatDate(now, 'Asia/Kolkata', 'HH'));
     var minute = parseInt(Utilities.formatDate(now, 'Asia/Kolkata', 'mm'));
-    if (hour > 6 || (hour === 6 && minute > 15)) {
-      return { success: false, error: 'उपस्थिति का समय समाप्त हो गया है। कृपया कल सुबह 6 बजे जुड़ें।' };
+    var totalMinutes = hour * 60 + minute;
+    if (totalMinutes < 350 || totalMinutes > 375) {
+      // Before 5:50 AM or after 6:15 AM
+      return { success: false, error: 'उपस्थिति का समय सुबह 5:50 से 6:15 बजे तक है। कृपया इस समय जुड़ें।' };
     }
 
     lock.waitLock(15000);
@@ -48,12 +50,23 @@ function mark(data) {
     var today = todayIST();
     var attendanceSheet = getOrCreateSheet('ATTENDANCE', ['UserID', 'Date', 'Status', 'Timestamp']);
 
-    // Check for duplicate attendance today
+    // Check for duplicate attendance today — return success with flag, not error
     var attendanceData = attendanceSheet.getDataRange().getValues();
     for (var i = 1; i < attendanceData.length; i++) {
       if (String(attendanceData[i][0]).trim() === userId &&
           normalizeAttendanceDate(attendanceData[i][1]) === today) {
-        return { success: false, error: 'Attendance already marked for today.' };
+        var membersSheet2 = getSheet('MEMBERS');
+        var memberValues2 = membersSheet2.getRange(memberRow, 1, 1, 8).getValues()[0];
+        return {
+          success: true,
+          data: {
+            marked: false,
+            alreadyMarked: true,
+            totalAttendance: Number(memberValues2[4]),
+            currentStreak: Number(memberValues2[5]),
+            lastAttendanceDate: today
+          }
+        };
       }
     }
 

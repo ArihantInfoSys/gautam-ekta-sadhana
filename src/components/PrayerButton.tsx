@@ -27,20 +27,34 @@ export default function PrayerButton({
     user ? isToday(user.lastAttendanceDate) : false
   );
   const [toast, setToast] = useState("");
+  const [showFallbackLink, setShowFallbackLink] = useState(false);
+
+  const hasValidZoom = zoomLink && !zoomLink.includes("PLACEHOLDER");
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(""), 3000);
   };
 
-  const handleClick = async () => {
-    if (!user || loading || attended) return;
+  const openZoom = () => {
+    if (!hasValidZoom) return;
+    const win = window.open(zoomLink, "_blank", "noopener,noreferrer");
+    // If popup was blocked, show fallback link
+    if (!win || win.closed) {
+      setShowFallbackLink(true);
+    }
+  };
 
-    // Open Zoom synchronously inside the click handler so popup blockers
-    // don't kill it. If we wait for the markAttendance fetch to resolve,
-    // the user-gesture context is lost and `window.open` gets blocked.
-    if (zoomLink && !zoomLink.includes("PLACEHOLDER")) {
-      window.open(zoomLink, "_blank", "noopener,noreferrer");
+  const handleClick = async () => {
+    if (!user || loading) return;
+
+    // Always open Zoom on every click (even if already attended)
+    openZoom();
+
+    // If already attended, no need to call API again
+    if (attended) {
+      showToast("🙏 Zoom खुल रहा है। उपस्थिति पहले से दर्ज है।");
+      return;
     }
 
     setLoading(true);
@@ -49,7 +63,11 @@ export default function PrayerButton({
 
     if (res.success && res.data) {
       setAttended(true);
-      showToast("🙏 उपस्थिति दर्ज हो गई!");
+      if (res.data.alreadyMarked) {
+        showToast("🙏 उपस्थिति पहले से दर्ज है।");
+      } else {
+        showToast("🙏 उपस्थिति दर्ज हो गई!");
+      }
       onAttendanceMarked?.(res.data);
     } else {
       showToast(res.error || "कुछ गड़बड़ हो गई, पुनः प्रयास करें।");
@@ -57,7 +75,7 @@ export default function PrayerButton({
   };
 
   return (
-    <div className="relative">
+    <div className="relative space-y-2">
       {toast && (
         <div className="slide-up absolute -top-12 left-0 right-0 bg-green-600 text-white text-center py-2 px-4 rounded-lg text-sm font-medium shadow-lg z-10">
           {toast}
@@ -65,19 +83,31 @@ export default function PrayerButton({
       )}
       <button
         onClick={handleClick}
-        disabled={attended || loading}
+        disabled={loading}
         className={`w-full py-4 px-6 rounded-xl text-lg font-bold shadow-lg transition-all btn-press ${
           attended
-            ? "bg-green-500 text-white cursor-default"
+            ? "bg-green-500 text-white hover:bg-green-600 active:scale-95"
             : "bg-saffron text-white hover:bg-saffron-dark active:scale-95"
         } ${loading ? "opacity-70 cursor-wait" : ""}`}
       >
         {loading
           ? "कृपया प्रतीक्षा करें..."
           : attended
-          ? "✅ आज की उपस्थिति दर्ज है"
+          ? "✅ उपस्थिति दर्ज — Zoom में पुनः जुड़ें"
           : "🙏 आज की प्रार्थना में जुड़ें"}
       </button>
+
+      {/* Fallback: direct clickable link if popup was blocked */}
+      {showFallbackLink && hasValidZoom && (
+        <a
+          href={zoomLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full text-center py-3 px-4 bg-blue-50 border border-blue-200 rounded-xl text-blue-700 text-sm font-semibold hover:bg-blue-100 transition-colors"
+        >
+          🔗 Zoom नहीं खुला? यहां क्लिक करें
+        </a>
+      )}
     </div>
   );
 }

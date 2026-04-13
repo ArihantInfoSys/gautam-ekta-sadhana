@@ -99,7 +99,7 @@ export default function LoginPage() {
 
         {/* Attendance time note */}
         <p className="text-center text-xs text-gray-400">
-          🕕 नोट: उपस्थिति सुबह 6:15 बजे से पहले ही दर्ज होगी।
+          🕕 नोट: उपस्थिति सुबह 5:50 से 6:15 बजे के बीच ही दर्ज होगी।
         </p>
 
         {/* Signup Link */}
