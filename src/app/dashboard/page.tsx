@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { getUserProfile, type AttendanceResult } from "@/lib/api";
+import { getSettings, getUserProfile, type AttendanceResult } from "@/lib/api";
 import { FOOTER_TEXT, FOOTER_DEDICATION, ZOOM_LINK } from "@/lib/constants";
 import GuruImage from "@/components/GuruImage";
 import SurpriseCard from "@/components/SurpriseCard";
@@ -54,6 +54,15 @@ export default function DashboardPage() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  // Fetch Zoom link from SETTINGS sheet (admin can update it)
+  useEffect(() => {
+    getSettings().then((res) => {
+      if (res.success && res.data && res.data.ZoomLink) {
+        setZoomLink(res.data.ZoomLink as string);
+      }
+    });
+  }, []);
 
   const handleAttendanceMarked = (data: AttendanceResult) => {
     setStreak(data.currentStreak);

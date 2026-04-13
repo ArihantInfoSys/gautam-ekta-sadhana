@@ -84,7 +84,7 @@ function getDashboard() {
  * @returns {Object} {success, settings: {key: value, ...}}
  */
 function getSettings() {
-  var sheet = getSheet('SETTINGS');
+  var sheet = getOrCreateSheet('SETTINGS', ['Key', 'Value']);
   var data = sheet.getDataRange().getValues();
   var settings = {};
 
@@ -130,7 +130,7 @@ function updateSettings(data) {
     }
 
     // Find or create the setting row
-    var settingsSheet = getSheet('SETTINGS');
+    var settingsSheet = getOrCreateSheet('SETTINGS', ['Key', 'Value']);
     var settingsData = settingsSheet.getDataRange().getValues();
     var settingRow = -1;
 
