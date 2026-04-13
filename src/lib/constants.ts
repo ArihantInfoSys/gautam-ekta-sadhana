@@ -6,7 +6,9 @@ export const GURU_QUOTE = "गुरु प्रेरणा से एकत�
 export const FOOTER_TEXT = "यह सिर्फ प्रार्थना नहीं… एकता का अनुभव है।";
 export const FOOTER_DEDICATION = "गुरुदेव को समर्पित — नगर रोड, गौतम लाभ्धि फाउंडेशन";
 
-export const GAS_URL = process.env.NEXT_PUBLIC_GAS_URL || "";
+export const GAS_URL = process.env.NEXT_PUBLIC_GAS_URL || "https://script.google.com/macros/s/AKfycbwG2Kbd7p29D1vcvcGU0YPuZp675_2He3Te2aVRx5q0zPtmS4Jc4f1Ldth37dnOwABlbA/exec";
+
+export const ZOOM_LINK = "https://us06web.zoom.us/j/89926460629?pwd=gi46wmNHChTSn61XP1qHlaHjk3f2iP.1";
 
 export const NAV_ITEMS = [
   { key: "dashboard", label: "डैशबोर्ड", href: "/dashboard" },

@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { getSettings, getUserProfile, type AttendanceResult } from "@/lib/api";
-import { FOOTER_TEXT, FOOTER_DEDICATION } from "@/lib/constants";
+import { getUserProfile, type AttendanceResult } from "@/lib/api";
+import { FOOTER_TEXT, FOOTER_DEDICATION, ZOOM_LINK } from "@/lib/constants";
 import GuruImage from "@/components/GuruImage";
 import SurpriseCard from "@/components/SurpriseCard";
 import DailyBhaav from "@/components/DailyBhaav";
@@ -18,7 +18,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 export default function DashboardPage() {
   const { user, login, logout, isLoading } = useAuth();
   const router = useRouter();
-  const [zoomLink, setZoomLink] = useState("");
+  const [zoomLink, setZoomLink] = useState(ZOOM_LINK);
   const [streak, setStreak] = useState(0);
   const [total, setTotal] = useState(0);
   const [activeTab, setActiveTab] = useState<"home" | "report" | "branch">("home");
@@ -54,14 +54,6 @@ export default function DashboardPage() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
-
-  useEffect(() => {
-    getSettings().then((res) => {
-      if (res.success && res.data && res.data.ZoomLink) {
-        setZoomLink(res.data.ZoomLink as string);
-      }
-    });
-  }, []);
 
   const handleAttendanceMarked = (data: AttendanceResult) => {
     setStreak(data.currentStreak);
