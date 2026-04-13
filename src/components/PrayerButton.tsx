@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { markAttendance, type AttendanceResult } from "@/lib/api";
 
@@ -39,6 +39,14 @@ export default function PrayerButton({
   const [showFallbackLink, setShowFallbackLink] = useState(false);
 
   const hasValidZoom = zoomLink && !zoomLink.includes("PLACEHOLDER");
+  const prayerTimeActive = isPrayerTime();
+
+  // Sync attended state when user data refreshes from server
+  useEffect(() => {
+    if (user && isToday(user.lastAttendanceDate)) {
+      setAttended(true);
+    }
+  }, [user?.lastAttendanceDate]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -56,19 +64,7 @@ export default function PrayerButton({
   const handleClick = async () => {
     if (!user || loading) return;
 
-    // Check prayer time window
-    if (!isPrayerTime()) {
-      showToast("⏰ प्रार्थना का समय सुबह 5:50 से 6:15 बजे तक है। कृपया इस समय जुड़ें।");
-      return;
-    }
-
-    // Check if Zoom link is valid
-    if (!hasValidZoom) {
-      showToast("⚠️ Zoom लिंक उपलब्ध नहीं है। कृपया व्यवस्थापक से संपर्क करें।");
-      return;
-    }
-
-    // Open Zoom on every click
+    // Open Zoom
     openZoom();
 
     // If already attended, no need to call API again
@@ -103,30 +99,37 @@ export default function PrayerButton({
       )}
 
       {!hasValidZoom ? (
-        /* No valid Zoom link — show warning */
+        /* No valid Zoom link */
         <div className="w-full py-4 px-6 rounded-xl text-center bg-yellow-50 border border-yellow-200 text-yellow-700">
           <p className="text-lg font-bold">⚠️ Zoom लिंक उपलब्ध नहीं है</p>
           <p className="text-sm mt-1">कृपया व्यवस्थापक (Admin) से संपर्क करें।</p>
         </div>
+      ) : attended ? (
+        /* Already attended today */
+        <div className="w-full py-4 px-6 rounded-xl text-center bg-green-50 border border-green-200">
+          <p className="text-lg font-bold text-green-700">✅ आज की उपस्थिति दर्ज हो चुकी है</p>
+          <p className="text-sm text-green-600 mt-1">🙏 जय जिनेन्द्र! आज की प्रार्थना में आपकी उपस्थिति सफलतापूर्वक दर्ज है।</p>
+        </div>
+      ) : !prayerTimeActive ? (
+        /* Outside prayer time — Zoom link not available */
+        <div className="w-full py-4 px-6 rounded-xl text-center bg-gray-100 border border-gray-200">
+          <p className="text-lg font-bold text-gray-500">⏰ प्रार्थना का समय नहीं है</p>
+          <p className="text-sm text-gray-400 mt-1">Zoom लिंक सुबह 5:50 से 6:15 बजे तक सक्रिय होगा।</p>
+        </div>
       ) : (
+        /* Prayer time & not attended — show active button */
         <>
           <button
             onClick={handleClick}
             disabled={loading}
-            className={`w-full py-4 px-6 rounded-xl text-lg font-bold shadow-lg transition-all btn-press ${
-              attended
-                ? "bg-green-500 text-white hover:bg-green-600 active:scale-95"
-                : "bg-saffron text-white hover:bg-saffron-dark active:scale-95"
-            } ${loading ? "opacity-70 cursor-wait" : ""}`}
+            className={`w-full py-4 px-6 rounded-xl text-lg font-bold shadow-lg transition-all btn-press bg-saffron text-white hover:bg-saffron-dark active:scale-95 ${
+              loading ? "opacity-70 cursor-wait" : ""
+            }`}
           >
-            {loading
-              ? "कृपया प्रतीक्षा करें..."
-              : attended
-              ? "✅ उपस्थिति दर्ज — Zoom में पुनः जुड़ें"
-              : "🙏 आज की प्रार्थना में जुड़ें"}
+            {loading ? "कृपया प्रतीक्षा करें..." : "🙏 आज की प्रार्थना में जुड़ें"}
           </button>
 
-          {/* Fallback: direct clickable link if popup was blocked */}
+          {/* Fallback if popup was blocked */}
           {showFallbackLink && (
             <a
               href={zoomLink}
@@ -138,7 +141,7 @@ export default function PrayerButton({
             </a>
           )}
 
-          {/* Always show direct Zoom link for easy access */}
+          {/* Direct Zoom link */}
           <a
             href={zoomLink}
             target="_blank"
@@ -147,13 +150,13 @@ export default function PrayerButton({
           >
             🔗 Zoom मीटिंग लिंक (सीधा खोलें)
           </a>
-
-          {/* Prayer time info */}
-          <p className="text-center text-[11px] text-gray-400">
-            🕕 प्रार्थना का समय: सुबह 5:50 से 6:15 बजे
-          </p>
         </>
       )}
+
+      {/* Prayer time info — always visible */}
+      <p className="text-center text-[11px] text-gray-400">
+        🕕 प्रार्थना का समय: सुबह 5:50 से 6:15 बजे
+      </p>
     </div>
   );
 }
